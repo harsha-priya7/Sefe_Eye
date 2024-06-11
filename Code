@@ -1,0 +1,46 @@
+// Pin assignments
+const int blinkSensorPin = D2;// Eye blink sensor output pin
+const int buzzer= D3;
+// Variables
+unsigned long blinkStartTime = 0;  // Start time of the minute
+int blinkCount = 0;                // Number of eye blinks in the current minute
+
+void setup() {
+  pinMode(blinkSensorPin, INPUT);  // Set the blink sensor pin as input
+  pinMode(buzzer, OUTPUT);
+  Serial.begin(115200);            // Initialize the serial communication
+}
+
+void loop() {
+  unsigned long currentTime = millis();  // Get the current time
+  
+  int blinkSensorValue = digitalRead(blinkSensorPin);  // Read the blink sensor value
+  
+  if (blinkSensorValue == LOW) {
+    if (blinkStartTime == 0) {
+      blinkStartTime = currentTime;  // Start counting from the first blink
+    }
+    
+    blinkCount++;  // Increment blink count when the sensor detects a blink
+    Serial.print("Blink count: ");
+    Serial.println(blinkCount);
+  }
+  
+  // Check if a minute has passed
+  if (currentTime - blinkStartTime >= 60000) {
+    Serial.println("Minute is up!");
+    Serial.print("Blink count in the last minute: ");
+    Serial.println(blinkCount);
+    if((blinkCount>16)||(blinkCount<10)){
+      digitalWrite(buzzer,1);
+      delay(4000);
+      digitalWrite(buzzer,0);
+    }
+    
+    // Reset the blink count and start time for the next minute
+    blinkCount = 0;
+    blinkStartTime = currentTime;
+  }
+  
+  delay(100);  // Delay between readings to avoid rapid count increments
+}
